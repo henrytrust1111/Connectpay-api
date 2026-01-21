@@ -40,8 +40,12 @@ A Node.js backend API for user authentication, profile management, wallet integr
      psql -d connectpay_db -f database/schema.sql
      ```
 
-4. **Configure environment variables**
-   - Copy `.env` and update:
+4. **Set up the database schema**
+   ```bash
+   npm run setup-db
+   ```
+
+5. **Configure environment variables**
      ```
      DATABASE_URL=postgresql://your_username:your_password@localhost:5432/connectpay_db
      JWT_SECRET=your_super_secret_jwt_key_here

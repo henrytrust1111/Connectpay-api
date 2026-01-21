@@ -21,5 +21,11 @@ export const login = async (req: Request, res: Response) => {
   if (!match) return res.status(401).json({ message: "Invalid credentials" });
 
   const token = jwt.sign({ id: user.id }, env.JWT_SECRET);
-  res.json({ token });
+  res.json({ 
+    token, 
+    userId: user.id, 
+    name: user.name, 
+    email: user.email, 
+    phone: user.phone 
+  });
 };
