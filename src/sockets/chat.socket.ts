@@ -5,10 +5,20 @@ export const chatSocket = (io: Server) => {
   io.on("connection", (socket: Socket) => {
     console.log("A user connected:", socket.id);
 
-    socket.on("send_message", async (data: any) => {
-      console.log("Message received:", data);
-      await saveMessage(data);
-      io.emit("receive_message", data);
+    socket.on("send_message", async (data) => {
+      try {
+        // 1️⃣ Save message and get DB record back
+        const savedMessage = await saveMessage({
+          senderId: data.sender_id,
+          receiverId: data.receiver_id,
+          message: data.message,
+        });
+
+        // 2️⃣ Emit ONLY the saved message (with id + created_at)
+        io.emit("receive_message", savedMessage);
+      } catch (error) {
+        console.error("Failed to send message:", error);
+      }
     });
 
     socket.on("disconnect", () => {
@@ -16,3 +26,30 @@ export const chatSocket = (io: Server) => {
     });
   });
 };
+
+
+
+
+
+
+
+
+
+// import { Server, Socket } from "socket.io";
+// import { saveMessage } from "../services/message.service";
+
+// export const chatSocket = (io: Server) => {
+//   io.on("connection", (socket: Socket) => {
+//     console.log("A user connected:", socket.id);
+
+//     socket.on("send_message", async (data: any) => {
+//       console.log("Message received:", data);
+//       await saveMessage(data);
+//       io.emit("receive_message", data);
+//     });
+
+//     socket.on("disconnect", () => {
+//       console.log("User disconnected:", socket.id);
+//     });
+//   });
+// };

@@ -26,6 +26,17 @@ export const findUserById = async (id: string) => {
   return result.rows[0];
 };
 
+export const getAllUsers = async (currentUserId: string) => {
+  const result = await pool.query(
+    `SELECT id, name, email, phone, avatar, created_at
+    FROM users
+    WHERE id != $1
+    ORDER BY created_at DESC`,
+    [currentUserId]
+  );
+  return result.rows;
+}
+
 export const updateUser = async (id: string, data: any) => {
   const { name, phone, avatar } = data;
   const result = await pool.query(

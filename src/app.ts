@@ -7,6 +7,7 @@ import profileRoutes from "./routes/profile.routes";
 import walletRoutes from "./routes/wallet.routes";
 import chatRoutes from "./routes/chat.routes";
 import callRoutes from "./routes/call.routes";
+import userRoutes from "./routes/user.routes";
 
 import { errorHandler } from "./middlewares/error.middleware";
 import { authenticate } from "./middlewares/auth.middlewares";
@@ -28,6 +29,7 @@ app.use("/api/profile", authenticate, profileRoutes);
 app.use("/api/wallet", authenticate, walletRoutes);
 app.use("/api/chats", authenticate, chatRoutes);
 app.use("/api/call", authenticate, callRoutes);
+app.use("/api/users", authenticate, userRoutes);
 
 /**
  * Health Check
