@@ -12,6 +12,7 @@ export const chatSocket = (io: Server) => {
           senderId: data.sender_id,
           receiverId: data.receiver_id,
           message: data.message,
+          replyToMessageId: data.reply_to_message_id ?? null,
         });
 
         // 2️⃣ Emit ONLY the saved message (with id, createdAt, replyTo)

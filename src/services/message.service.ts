@@ -20,7 +20,7 @@ export const saveMessage = async ({
     `INSERT INTO messages (sender_id, receiver_id, message, reply_to_message_id)
      VALUES ($1, $2, $3, $4)
      RETURNING *`,
-    [senderId, receiverId, message, replyToMessageId],
+    [senderId, receiverId, message, replyToMessageId || null],
   );
 
   return result.rows[0];
