@@ -29,3 +29,8 @@ CREATE TABLE IF NOT EXISTS calls (
   started_at TIMESTAMP,
   ended_at TIMESTAMP
 );
+
+-- ALTER TABLE messages
+-- ADD COLUMN reply_to_message_id UUID
+-- REFERENCES messages(id)
+-- ON DELETE SET NULL;

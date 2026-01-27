@@ -14,7 +14,7 @@ export const chatSocket = (io: Server) => {
           message: data.message,
         });
 
-        // 2️⃣ Emit ONLY the saved message (with id + created_at)
+        // 2️⃣ Emit ONLY the saved message (with id, createdAt, replyTo)
         io.emit("receive_message", savedMessage);
       } catch (error) {
         console.error("Failed to send message:", error);
