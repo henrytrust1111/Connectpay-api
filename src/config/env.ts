@@ -7,6 +7,8 @@ export const env = {
   JWT_SECRET: process.env.JWT_SECRET!,
   JWT_EXPIRES_IN: process.env.JWT_EXPIRES_IN as "1h",
   ONEPIPE_API_KEY: process.env.ONEPIPE_API_KEY || "mock_key",
-  NODE_ENV: process.env.NODE_ENV
+  NODE_ENV: process.env.NODE_ENV,
+  VAPID_PUBLIC_KEY: process.env.VAPID_PUBLIC_KEY!,
+  VAPID_PRIVATE_KEY: process.env.VAPID_PRIVATE_KEY!
 };
  

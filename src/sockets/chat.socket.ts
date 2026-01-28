@@ -1,5 +1,6 @@
 import { Server, Socket } from "socket.io";
 import { saveMessage } from "../services/message.service";
+import { sendPushNotification } from "../services/push.service";
 
 export const chatSocket = (io: Server) => {
   io.on("connection", (socket: Socket) => {
@@ -17,6 +18,13 @@ export const chatSocket = (io: Server) => {
 
         // 2️⃣ Emit ONLY the saved message (with id, createdAt, replyTo)
         io.emit("receive_message", savedMessage);
+
+        // 🔔 PUSH NOTIFICATION
+        await sendPushNotification(data.receiver_id, {
+          title: "New message",
+          body: data.message,
+          senderId: data.sender_id,
+        });
       } catch (error) {
         console.error("Failed to send message:", error);
       }
@@ -27,14 +35,6 @@ export const chatSocket = (io: Server) => {
     });
   });
 };
-
-
-
-
-
-
-
-
 
 // import { Server, Socket } from "socket.io";
 // import { saveMessage } from "../services/message.service";

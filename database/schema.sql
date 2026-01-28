@@ -30,6 +30,14 @@ CREATE TABLE IF NOT EXISTS calls (
   ended_at TIMESTAMP
 );
 
+CREATE TABLE IF NOT EXISTS push_subscriptions (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+  subscription JSONB NOT NULL,
+  created_at TIMESTAMP DEFAULT NOW()
+);
+
+
 -- ALTER TABLE messages
 -- ADD COLUMN reply_to_message_id UUID
 -- REFERENCES messages(id)
