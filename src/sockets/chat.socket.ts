@@ -24,8 +24,8 @@ export const chatSocket = (io: Server) => {
         const sender = await findUserById(data.sender_id);
         const senderName = sender?.name ?? "Someone";
         await sendPushNotification(data.receiver_id, {
-          title: "New message",
-          body: `${senderName} sent: ${data.message}`,
+          title: senderName,
+          body: data.message,
           senderId: data.sender_id,
         });
       } catch (error) {
