@@ -21,7 +21,7 @@ export const chatSocket = (io: Server) => {
 
         // 🔔 PUSH NOTIFICATION
         await sendPushNotification(data.receiver_id, {
-          title: "New message",
+          title: `${data.sender_name}`,
           body: data.message,
           senderId: data.sender_id,
         });
