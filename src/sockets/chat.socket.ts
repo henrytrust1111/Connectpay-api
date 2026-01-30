@@ -1,6 +1,7 @@
 import { Server, Socket } from "socket.io";
 import { saveMessage } from "../services/message.service";
 import { sendPushNotification } from "../services/push.service";
+import { findUserById } from "../services/user.service";
 
 export const chatSocket = (io: Server) => {
   io.on("connection", (socket: Socket) => {
@@ -20,9 +21,11 @@ export const chatSocket = (io: Server) => {
         io.emit("receive_message", savedMessage);
 
         // 🔔 PUSH NOTIFICATION
+        const sender = await findUserById(data.sender_id);
+        const senderName = sender?.name ?? "Someone";
         await sendPushNotification(data.receiver_id, {
-          title: `${data.sender_name}`,
-          body: data.message,
+          title: "New message",
+          body: `${senderName} sent: ${data.message}`,
           senderId: data.sender_id,
         });
       } catch (error) {
