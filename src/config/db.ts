@@ -9,6 +9,15 @@ export const pool = new Pool({
 export const connectDB = async () => {
   try {
     await pool.query("SELECT 1");
+
+    // Ensure messages table has columns used by the application (safe to run repeatedly)
+    await pool.query(`ALTER TABLE messages ADD COLUMN IF NOT EXISTS edited BOOLEAN DEFAULT false`);
+    await pool.query(`ALTER TABLE messages ADD COLUMN IF NOT EXISTS edited_at TIMESTAMP`);
+
+    // Ensure delete-related columns exist
+    await pool.query(`ALTER TABLE messages ADD COLUMN IF NOT EXISTS is_deleted BOOLEAN DEFAULT false`);
+    await pool.query(`ALTER TABLE messages ADD COLUMN IF NOT EXISTS deleted_for UUID[] DEFAULT '{}'`);
+
     console.log("Database connected successfully");
   } catch (error) {
     console.error("Database connection failed:", error);

@@ -77,8 +77,14 @@ A Node.js backend API for user authentication, profile management, wallet integr
 - `GET /api/wallet/balance` - Get wallet balance
 
 ### Messaging (requires JWT)
-- `GET /api/chats/:userId` - Get chat history with user
-- WebSocket: `send_message` event for real-time messaging
+- `GET /api/chats/:userId` - Get chat history with user (messages deleted for the requesting user are excluded)
+- `PATCH /api/chats/message/:id` - Edit a message (sender only)
+- `DELETE /api/chats/message/:id?type=me|everyone` - Delete message for 'me' (default) or for 'everyone' (sender only)
+
+- WebSocket events for real-time messaging:
+  - `send_message` - Send a new message (payload: `{ sender_id, receiver_id, message, reply_to_message_id? }`)
+  - `edit_message` - Edit an existing message (payload: `{ message_id, editor_id, new_message }`) -> server emits `message_edited`
+  - `delete_message` - Delete a message (payload: `{ message_id, requester_id, type: 'me' | 'everyone' }`) -> server emits `message_deleted` (for everyone) or replies to requester for 'me' deletion`
 
 ### Calls (requires JWT)
 - `POST /api/call/start` - Start call

@@ -27,7 +27,71 @@ export const saveMessage = async ({
 };
 
 /**
- * Fetch chat history between two users
+ * Find a message by id
+ */
+export const findMessageById = async (id: string) => {
+  const result = await pool.query(`SELECT * FROM messages WHERE id = $1`, [id]);
+  return result.rows[0];
+};
+
+/**
+ * Edit a message (only sender can edit)
+ */
+export const editMessage = async (id: string, editorId: string, newMessage: string) => {
+  // Ensure the editor is the original sender
+  const existing = await findMessageById(id);
+  if (!existing) throw new Error("Message not found");
+  if (existing.sender_id !== editorId) throw new Error("Unauthorized: only the sender can edit this message");
+
+  const result = await pool.query(
+    `UPDATE messages
+     SET message = $3, edited = true, edited_at = NOW()
+     WHERE id = $1
+       AND sender_id = $2
+     RETURNING *`,
+    [id, editorId, newMessage],
+  );
+
+  return result.rows[0];
+};
+
+/**
+ * Delete a message for everyone (only sender can do this)
+ */
+export const deleteMessageForEveryone = async (id: string, requesterId: string) => {
+  const existing = await findMessageById(id);
+  if (!existing) throw new Error("Message not found");
+  if (existing.sender_id !== requesterId) throw new Error("Unauthorized: only the sender can delete for everyone");
+
+  const result = await pool.query(
+    `UPDATE messages
+     SET is_deleted = true, message = NULL
+     WHERE id = $1
+       AND sender_id = $2
+     RETURNING *`,
+    [id, requesterId],
+  );
+
+  return result.rows[0];
+};
+
+/**
+ * Delete a message for the requesting user only
+ */
+export const deleteMessageForMe = async (id: string, userId: string) => {
+  const result = await pool.query(
+    `UPDATE messages
+     SET deleted_for = CASE WHEN $2 = ANY(deleted_for) THEN deleted_for ELSE array_append(coalesce(deleted_for, '{}')::uuid[], $2::uuid) END
+     WHERE id = $1
+     RETURNING *`,
+    [id, userId],
+  );
+
+  return result.rows[0];
+};
+
+/**
+ * Fetch chat history between two users (excludes messages deleted for the requesting user)
  */
 export const getChatHistory = async (userId: string, otherUserId: string) => {
   const result = await pool.query(
@@ -38,6 +102,10 @@ export const getChatHistory = async (userId: string, otherUserId: string) => {
       m.receiver_id,
       m.message,
       m.created_at,
+      m.edited,
+      m.edited_at,
+      m.is_deleted,
+      m.deleted_for,
 
       -- quoted message fields (if any)
       rm.id AS reply_id,
@@ -51,9 +119,10 @@ export const getChatHistory = async (userId: string, otherUserId: string) => {
       ON m.reply_to_message_id = rm.id
 
     WHERE
-      (m.sender_id = $1 AND m.receiver_id = $2)
+      ((m.sender_id = $1 AND m.receiver_id = $2)
       OR
-      (m.sender_id = $2 AND m.receiver_id = $1)
+      (m.sender_id = $2 AND m.receiver_id = $1))
+      AND NOT ($1 = ANY(coalesce(m.deleted_for, '{}')))
 
     ORDER BY m.created_at ASC
     `,

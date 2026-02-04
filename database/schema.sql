@@ -19,6 +19,11 @@ CREATE TABLE IF NOT EXISTS messages (
   sender_id UUID,
   receiver_id UUID,
   message TEXT,
+  reply_to_message_id UUID REFERENCES messages(id) ON DELETE SET NULL,
+  edited BOOLEAN DEFAULT false,
+  edited_at TIMESTAMP,
+  is_deleted BOOLEAN DEFAULT false,
+  deleted_for UUID[] DEFAULT '{}',
   created_at TIMESTAMP DEFAULT NOW()
 );
 
@@ -38,7 +43,20 @@ CREATE TABLE IF NOT EXISTS push_subscriptions (
 );
 
 
+-- Keep schema robust: add columns if they are missing
+ALTER TABLE messages
+  ADD COLUMN IF NOT EXISTS edited BOOLEAN DEFAULT false;
+
+ALTER TABLE messages
+  ADD COLUMN IF NOT EXISTS edited_at TIMESTAMP;
+
+-- Ensure delete-related columns are also present
+ALTER TABLE messages
+  ADD COLUMN IF NOT EXISTS is_deleted BOOLEAN DEFAULT false;
+
+ALTER TABLE messages
+  ADD COLUMN IF NOT EXISTS deleted_for UUID[] DEFAULT '{}';
+
+-- If you need to add reply_to_message_id later, consider running:
 -- ALTER TABLE messages
--- ADD COLUMN reply_to_message_id UUID
--- REFERENCES messages(id)
--- ON DELETE SET NULL;
+--   ADD COLUMN IF NOT EXISTS reply_to_message_id UUID REFERENCES messages(id) ON DELETE SET NULL;

@@ -1,5 +1,5 @@
 import { Server, Socket } from "socket.io";
-import { saveMessage } from "../services/message.service";
+import { saveMessage, editMessage, deleteMessageForEveryone, deleteMessageForMe } from "../services/message.service";
 import { sendPushNotification } from "../services/push.service";
 import { findUserById } from "../services/user.service";
 
@@ -30,6 +30,35 @@ export const chatSocket = (io: Server) => {
         });
       } catch (error) {
         console.error("Failed to send message:", error);
+      }
+    });
+
+    // Edit message
+    socket.on("edit_message", async (data) => {
+      try {
+        // data: { message_id, editor_id, new_message }
+        const updated = await editMessage(data.message_id, data.editor_id, data.new_message);
+        io.emit("message_edited", updated);
+      } catch (error) {
+        console.error("Failed to edit message:", error);
+        socket.emit("error", { message: (error as any).message });
+      }
+    });
+
+    // Delete message (type: 'me' | 'everyone')
+    socket.on("delete_message", async (data) => {
+      try {
+        // data: { message_id, requester_id, type }
+        if (data.type === "everyone") {
+          const updated = await deleteMessageForEveryone(data.message_id, data.requester_id);
+          io.emit("message_deleted", { id: data.message_id, forEveryone: true, message: updated });
+        } else {
+          const updated = await deleteMessageForMe(data.message_id, data.requester_id);
+          socket.emit("message_deleted", { id: data.message_id, forEveryone: false, deletedFor: data.requester_id });
+        }
+      } catch (error) {
+        console.error("Failed to delete message:", error);
+        socket.emit("error", { message: (error as any).message });
       }
     });
 
